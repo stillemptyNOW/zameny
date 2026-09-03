@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0d12" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Замены · 04.09.2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0b0d12;
+      --bg2: #12151c;
+      --card: #171b24;
+      --card2: #1d2330;
+      --line: rgba(255,255,255,.08);
+      --text: #f3f5f8;
+      --muted: #9aa3b2;
+      --faint: #6b7382;
+      --accent: #7c5cff;
+      --accent2: #4cc9f0;
+      --ok: #3ddc97;
+      --warn: #ffb020;
+      --radius: 18px;
+      --safe-b: env(safe-area-inset-bottom, 0px);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--bg); color: var(--text); font-family: Manrope, system-ui, sans-serif; min-height: 100%; }
+    body { padding-bottom: calc(24px + var(--safe-b)); }
+
+    .top {
+      position: sticky; top: 0; z-index: 20;
+      padding: 16px 16px 12px;
+      background: linear-gradient(180deg, #0b0d12 70%, rgba(11,13,18,0));
+      backdrop-filter: blur(10px);
+    }
+    .kicker { color: var(--accent2); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    h1 { font-size: 26px; font-weight: 800; letter-spacing: -.03em; margin: 4px 0 2px; }
+    .sub { color: var(--muted); font-size: 13px; }
+
+    .search-wrap { margin: 14px 16px 8px; position: relative; }
+    .search-wrap input {
+      width: 100%; height: 46px; border: 1px solid var(--line);
+      background: var(--card); color: var(--text);
+      border-radius: 14px; padding: 0 14px 0 42px;
+      font: 500 15px Manrope, sans-serif; outline: none;
+    }
+    .search-wrap input:focus { border-color: #7c5cff88; box-shadow: 0 0 0 3px #7c5cff22; }
+    .search-wrap svg { position: absolute; left: 14px; top: 13px; opacity: .55; }
+
+    .chips { display: flex; gap: 8px; padding: 8px 16px 4px; overflow-x: auto; scrollbar-width: none; }
+    .chips::-webkit-scrollbar { display: none; }
+    .chip {
+      flex: 0 0 auto; border: 1px solid var(--line); background: var(--card);
+      color: var(--muted); border-radius: 999px; padding: 8px 12px;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+    .chip.on { background: #7c5cff22; border-color: #7c5cff66; color: #d7ccff; }
+
+    .section { padding: 18px 16px 4px; }
+    .section h2 { font-size: 13px; color: var(--faint); font-weight: 700; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 10px; }
+
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    @media (min-width: 640px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (min-width: 960px) { .grid { grid-template-columns: repeat(4, 1fr); max-width: 980px; margin: 0 auto; } }
+
+    .gcard {
+      background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 14px 14px 12px; text-align: left; cursor: pointer;
+      transition: transform .15s ease, border-color .15s ease, background .15s;
+    }
+    .gcard:active { transform: scale(.98); }
+    .gcard:hover { border-color: #7c5cff55; background: var(--card2); }
+    .gcard .name { font-size: 18px; font-weight: 800; letter-spacing: -.02em; }
+    .gcard .meta { margin-top: 4px; color: var(--muted); font-size: 12px; font-weight: 600; }
+    .dots { display: flex; gap: 4px; margin-top: 10px; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: #2a3140; }
+    .dot.has { background: var(--accent); }
+
+    .overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.55);
+      opacity: 0; pointer-events: none; transition: opacity .2s ease; z-index: 40;
+    }
+    .overlay.show { opacity: 1; pointer-events: auto; }
+    .sheet {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+      background: #141824; border-top: 1px solid var(--line);
+      border-radius: 22px 22px 0 0;
+      transform: translateY(110%); transition: transform .28s cubic-bezier(.2,.8,.2,1);
+      max-height: 88vh; overflow: auto; padding: 10px 16px calc(20px + var(--safe-b));
+    }
+    .sheet.open { transform: translateY(0); }
+    .handle { width: 42px; height: 5px; border-radius: 99px; background: #3a4152; margin: 6px auto 12px; }
+    .sheet-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+    .sheet-head h3 { font-size: 24px; font-weight: 800; }
+    .sheet-head p { color: var(--muted); font-size: 13px; margin-top: 2px; }
+    .xbtn {
+      width: 36px; height: 36px; border-radius: 50%; border: 0;
+      background: #232838; color: var(--text); font-size: 18px; cursor: pointer;
+    }
+
+    .lesson {
+      display: grid; grid-template-columns: 52px 1fr auto; gap: 12px; align-items: center;
+      background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+      padding: 12px 14px; margin-bottom: 8px;
+    }
+    .pn {
+      width: 40px; height: 40px; border-radius: 12px;
+      display: grid; place-items: center;
+      background: #7c5cff22; color: #cbbfff; font-weight: 800; font-size: 14px;
+    }
+    .subj { font-weight: 700; font-size: 15px; line-height: 1.25; }
+    .room { color: var(--muted); font-size: 12px; font-weight: 600; margin-top: 3px; }
+    .badge {
+      font-size: 12px; font-weight: 700; color: var(--accent2);
+      background: #4cc9f018; border: 1px solid #4cc9f033;
+      padding: 6px 9px; border-radius: 999px; white-space: nowrap;
+    }
+    .empty { color: var(--muted); text-align: center; padding: 28px 8px; }
+    .hint { color: var(--faint); font-size: 12px; text-align: center; padding: 22px 16px 0; }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="kicker">КИМ · замены</div>
+    <h1>Расписание групп</h1>
+    <p class="sub" id="subtitle">04.09.2026 · нажми группу</p>
+  </header>
+
+  <div class="search-wrap">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <circle cx="11" cy="11" r="7" stroke="#9aa3b2" stroke-width="2"/>
+      <path d="M20 20L16.5 16.5" stroke="#9aa3b2" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <input id="q" type="search" placeholder="Найти группу — ИСиП, ДО-26…" autocomplete="off" />
+  </div>
+  <div class="chips" id="chips"></div>
+  <main id="main"></main>
+  <p class="hint">Каждую неделю просто кидаешь новый PDF — список групп обновляется.</p>
+
+  <div class="overlay" id="overlay"></div>
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true">
+    <div class="handle"></div>
+    <div class="sheet-head">
+      <div>
+        <h3 id="s-name">—</h3>
+        <p id="s-meta"></p>
+      </div>
+      <button class="xbtn" id="close" aria-label="Закрыть">×</button>
+    </div>
+    <div id="s-list"></div>
+  </div>
+
+  <script src="data.js"></script>
+  <script>
+    const DATA = window.SCHEDULE;
+    const main = document.getElementById("main");
+    const chips = document.getElementById("chips");
+    const q = document.getElementById("q");
+    const overlay = document.getElementById("overlay");
+    const sheet = document.getElementById("sheet");
+    let courseFilter = "all";
+
+    document.getElementById("subtitle").textContent =
+      `${DATA.date} · ${DATA.semester} · ${DATA.groups.length} групп`;
+
+    const courses = [...new Set(DATA.groups.map(g => g.course))].sort();
+    const chipAll = btn("Все", "all", true);
+    chips.appendChild(chipAll);
+    courses.forEach(c => chips.appendChild(btn(`Курс ${c}`, c, false)));
+
+    function btn(label, value, on) {
+      const b = document.createElement("button");
+      b.className = "chip" + (on ? " on" : "");
+      b.textContent = label;
+      b.dataset.v = value;
+      b.onclick = () => {
+        courseFilter = value;
+        [...chips.children].forEach(x => x.classList.toggle("on", x.dataset.v === value));
+        render();
+      };
+      return b;
+    }
+
+    function render() {
+      const query = q.value.trim().toLowerCase().replace(/\s+/g, "");
+      const filtered = DATA.groups.filter(g => {
+        const okCourse = courseFilter === "all" || g.course === courseFilter;
+        const hay = (g.name + g.id).toLowerCase().replace(/\s+/g, "");
+        return okCourse && hay.includes(query);
+      });
+
+      main.innerHTML = "";
+      const byCourse = {};
+      filtered.forEach(g => {
+        (byCourse[g.course] ||= []).push(g);
+      });
+
+      if (!filtered.length) {
+        const p = document.createElement("p");
+        p.className = "empty";
+        p.textContent = "Такой группы в заменах нет";
+        main.appendChild(p);
+        return;
+      }
+
+      Object.keys(byCourse).sort().forEach(course => {
+        const sec = document.createElement("section");
+        sec.className = "section";
+        sec.innerHTML = `<h2>Курс ${course}</h2>`;
+        const grid = document.createElement("div");
+        grid.className = "grid";
+        byCourse[course].forEach(g => grid.appendChild(card(g)));
+        sec.appendChild(grid);
+        main.appendChild(sec);
+      });
+    }
+
+    function card(g) {
+      const b = document.createElement("button");
+      b.className = "gcard";
+      const dots = [1,2,3,4,5].map(n => {
+        const has = g.lessons.some(l => l.n === n);
+        return `<span class="dot${has ? " has" : ""}"></span>`;
+      }).join("");
+      b.innerHTML = `
+        <div class="name">${g.name}</div>
+        <div class="meta">${g.lessons.length} пар${plural(g.lessons.length)}</div>
+        <div class="dots">${dots}</div>`;
+      b.onclick = () => openGroup(g);
+      return b;
+    }
+
+    function plural(n) {
+      const m = n % 10, t = n % 100;
+      if (m === 1 && t !== 11) return "а";
+      if (m >= 2 && m <= 4 && (t < 12 || t > 14)) return "ы";
+      return "";
+    }
+
+    function openGroup(g) {
+      document.getElementById("s-name").textContent = g.name;
+      document.getElementById("s-meta").textContent = `Курс ${g.course} · ${DATA.date}`;
+      const list = document.getElementById("s-list");
+      if (!g.lessons.length) {
+        list.innerHTML = `<p class="empty">В заменах на этот день пар нет</p>`;
+      } else {
+        list.innerHTML = g.lessons.map(l => `
+          <div class="lesson">
+            <div class="pn">${l.n}</div>
+            <div>
+              <div class="subj">${esc(l.subject || "—")}</div>
+              <div class="room">${roomLabel(l.room)}</div>
+            </div>
+            <div class="badge">${esc(shortRoom(l.room))}</div>
+          </div>`).join("");
+      }
+      overlay.classList.add("show");
+      sheet.classList.add("open");
+    }
+
+    function roomLabel(r) {
+      if (!r || r === "—") return "аудитория не указана";
+      if (String(r).includes("дистант")) return "дистанционно";
+      if (r === "с/з") return "спортзал";
+      return "ауд. " + r;
+    }
+    function shortRoom(r) {
+      if (!r || r === "—") return "—";
+      if (String(r).includes("дистант")) return "онлайн";
+      if (r === "с/з") return "с/з";
+      return r;
+    }
+    function esc(s) {
+      return String(s).replace(/[&<>"']/g, c => ({
+        "&":"&","<":"<",">":">","\"":""","'":"&#39;"
+      }[c]));
+    }
+
+    function close() {
+      overlay.classList.remove("show");
+      sheet.classList.remove("open");
+    }
+    document.getElementById("close").onclick = close;
+    overlay.onclick = close;
+    document.addEventListener("keydown", e => { if (e.key === "Escape") close(); });
+    q.addEventListener("input", render);
+    render();
+  </script>
+</body>
+</html>
